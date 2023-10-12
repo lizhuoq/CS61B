@@ -1,4 +1,4 @@
-public class Exercise2
+public class Exercise3
 {
     public static int max(int[] m)
     {
