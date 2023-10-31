@@ -113,7 +113,66 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        this.board.setViewingPerspective(side);
+        int size = this.board.size();
+        for (int c = 0; c < size; c++)
+        {
+            int[] columns = new int[size];
+            for (int r = 0; r < size; r++)
+            {
+                if (this.board.tile(c, r) == null)
+                {
+                    columns[r] = 0;
+                }
+                else
+                {
+                    columns[r] = this.board.tile(c, r).value();
+                }
+            }
+            int[] destination = new int[size];
+            int pos = size - 1;
+            int currentValue = 0;
+            for (int r = size - 1; r >= 0; r--)
+            {
+                if (columns[r] == 0)
+                {
+                    destination[r] = -1;
+                }
+                else if (columns[r] != currentValue)
+                {
+                    destination[r] = pos;
+                    pos -= 1;
+                    currentValue = columns[r];
+                }
+                else if (columns[r] == currentValue)
+                {
+                    destination[r] = pos + 1;
+                    currentValue = 0;
+                }
+            }
 
+            for (int r = size - 1; r >= 0; r--)
+            {
+                if (destination[r] == -1)
+                {
+                    continue;
+                }
+                else if (destination[r] == r)
+                {
+                    continue;
+                }
+                else
+                {
+                    boolean isMerge = this.board.move(c, destination[r], this.board.tile(c, r));
+                    if (isMerge)
+                    {
+                        this.score += (columns[r] * 2);
+                    }
+                    changed = true;
+                }
+            }
+        }
+        this.board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -138,6 +197,17 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (b.tile(i, j) == null)
+                {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -148,6 +218,61 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (b.tile(i, j) == null)
+                {
+                    continue;
+                }
+                else if (b.tile(i, j).value() == MAX_PIECE)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    public static int[] generateDirection(int size, int i)
+    {
+        int[] directions;
+        if (i == 0)
+        {
+            directions = new int[]{0, 1};
+        }
+        else if (i == size - 1)
+        {
+            directions = new int[]{0, -1};
+        }
+        else
+        {
+            directions = new int[]{0, 1, -1};
+        }
+        return directions;
+    }
+
+    public static boolean adjacentSame(Board b, int i, int j, int[] xDirections, int[] yDirections)
+    {
+        int currentValue = b.tile(i, j).value();
+        for (int xDirection : xDirections) {
+            for (int yDirection : yDirections) {
+                if (Math.abs(xDirection) == Math.abs(yDirection))
+                {
+                    continue;
+                }
+                if (b.tile(i + xDirection, j + yDirection) == null)
+                {
+                    continue;
+                }
+                if (currentValue == b.tile(i + xDirection, j + yDirection).value()) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -159,6 +284,28 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++)
+        {
+            int[] xDirections = generateDirection(size, i);
+            for (int j = 0; j < size; j++)
+            {
+                int[] yDirections = generateDirection(size, j);
+                if (b.tile(i, j) == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    // 2. There are two adjacent tiles with the same value.
+                    boolean same = adjacentSame(b, i, j, xDirections, yDirections);
+                    if (same)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
