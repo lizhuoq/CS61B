@@ -21,7 +21,33 @@ public class TimeAList {
         timeAListConstruction();
     }
 
+    public static void timeAddLast(int N)
+    {
+        AList<Integer> L = new AList<>();
+        for (int i = 0; i < N; i++)
+        {
+            L.addLast(i);
+        }
+    }
+
     public static void timeAListConstruction() {
         // TODO: YOUR CODE HERE
+        int N = 1000;
+        AList<Integer> NColumn = new AList<>();
+        AList<Double> timeColumn = new AList<>();
+        AList<Integer> opsColumns = new AList<>();
+        while (N <= 128000)
+        {
+            Stopwatch sw = new Stopwatch();
+            // addLast
+            timeAddLast(N);
+            double timeInSeconds = sw.elapsedTime();
+            NColumn.addLast(N);
+            opsColumns.addLast(N);
+            timeColumn.addLast(timeInSeconds);
+            N *= 2;
+        }
+
+        printTimingTable(NColumn, timeColumn, opsColumns);
     }
 }
